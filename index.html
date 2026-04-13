@@ -2,33 +2,35 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Мой статус</title>
+  <title>Монитор статуса</title>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // 🔑 ТВОИ ДАННЫЕ
-    const URL = "https://kprqdzvhtvhzzxgichzg.supabase.co";
-    const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcnFkenZodHZoenp4Z2ljaHpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjUyMTQsImV4cCI6MjA5MTIwMTIxNH0.ST_I3cjoCOyhIDjWgwJLcn0a13-Pw_qaS5tZo2do_lY"; // ⚠️ возможно неправильный!
-
-    const supabase = createClient(URL, KEY);
+    // ТВОИ ДАННЫЕ (уже вставлены)
+    const supabase = createClient(
+      "https://kprqdzvhtvhzzxgichzg.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcnFkenZodHZoenp4Z2ljaHpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjUyMTQsImV4cCI6MjA5MTIwMTIxNH0.ST_I3cjoCOyhIDjWgwJLcn0a13-Pw_qaS5tZo2do_lY"
+    );
 
     const MY_ID = "980eb134-099b-43a8-8375-4b8386ee56d0";
 
     // смена статуса
     window.setStatus = async (status) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ status: status })
         .eq("id", MY_ID);
 
-      console.log("DATA:", data);
-      console.log("ERROR:", error);
-
-      loadMe();
+      if (error) {
+        alert("Ошибка! Открой F12");
+        console.error(error);
+      } else {
+        loadMe();
+      }
     };
 
-    // загрузка профиля
+    // загрузка данных
     async function loadMe() {
       const { data, error } = await supabase
         .from("profiles")
@@ -36,12 +38,13 @@
         .eq("id", MY_ID)
         .single();
 
-      console.log("LOAD:", data, error);
-
-      if (data) {
-        document.getElementById("name").textContent = data.username;
-        document.getElementById("status").textContent = data.status;
+      if (error) {
+        console.error(error);
+        return;
       }
+
+      document.getElementById("name").textContent = data.username;
+      document.getElementById("status").textContent = data.status;
     }
 
     window.onload = loadMe;
