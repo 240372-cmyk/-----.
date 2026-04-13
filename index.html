@@ -1,14 +1,75 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
- <meta charset="UTF-8">
- <title>Облачная практика</title>
+  <meta charset="UTF-8">
+  <title>Монитор статусов</title>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // 🔑 ВСТАВЬ СВОИ ДАННЫЕ
+    const URL = "https://kprqdzvhtvhzzxgichzg.supabase.co";
+    const KEY = "sb_publishable__QV6NspMsBnmAti1tty93w_TcML7mX4";
+
+    const supabase = createClient(URL, KEY);
+
+    // 🔑 ВСТАВЬ СВОЙ ID
+    const MY_ID = "980eb134-099b-43a8-8375-4b8386ee56d0";
+
+    // смена статуса
+    window.setStatus = async (newStatus) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ status: newStatus })
+        .eq("id", MY_ID);
+
+      if (error) {
+        alert("Ошибка обновления");
+        console.error(error);
+      }
+    };
+
+    // загрузка данных
+    async function loadProfiles() {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("username", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+
+      data.forEach(user => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${user.username}</b> — 
+          <span style="color: ${user.status === 'online' ? 'green' : user.status === 'busy' ? 'orange' : 'gray'}">
+            ${user.status}
+          </span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    // автообновление
+    setInterval(loadProfiles, 5000);
+
+    window.onload = loadProfiles;
+  </script>
 </head>
 <body>
- <h1>Проект успешно запущен в облаке!</h1>
- <hr>
- <p>Работу выполнил студент: <strong>Шевченко Максим </strong></p>
- <p>Группа: <strong>ПО-3</strong></p>
- <p>Тип облака: <strong>PaaS (GitHub Pages)</strong></p>
+
+  <h2>Мой профиль</h2>
+  <button onclick="setStatus('online')">🟢 Онлайн</button>
+  <button onclick="setStatus('busy')">🟡 Занят</button>
+  <button onclick="setStatus('offline')">⚪ Оффлайн</button>
+
+  <h2>Монитор группы</h2>
+  <ul id="list"></ul>
+
 </body>
 </html>
