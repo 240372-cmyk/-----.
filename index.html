@@ -1,63 +1,60 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Монитор статуса</title>
+<meta charset="UTF-8">
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const supabase = createClient(
-      "https://kprqdzvhtvhzzxgichzg.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcnFkenZodHZoenp4Z2ljaHpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjUyMTQsImV4cCI6MjA5MTIwMTIxNH0.ST_I3cjoCOyhIDjWgwJLcn0a13-Pw_qaS5tZo2do_lY"
-    );
+const supabase = createClient(
+  "https://kprqdzvhtvhzzxgichzg.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcnFkenZodHZoenp4Z2ljaHpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjUyMTQsImV4cCI6MjA5MTIwMTIxNH0.ST_I3cjoCOyhIDjWgwJLcn0a13-Pw_qaS5tZo2do_lY"
+);
 
-    const MY_ID = "980eb134-099b-43a8-8375-4b8386ee56d0";
+const MY_ID = "980eb134-099b-43a8-8375-4b8386ee56d0";
 
-    window.setStatus = async (status) => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ status })
-        .eq("id", MY_ID);
+async function load() {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", MY_ID)
+    .single();
 
-      if (error) {
-        console.error(error);
-        alert("Ошибка обновления (см. консоль)");
-      } else {
-        loadMe();
-      }
-    };
+  if (error) {
+    console.log(error);
+    return;
+  }
 
-    async function loadMe() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", MY_ID)
-        .single();
+  document.getElementById("name").innerText = data.username;
+  document.getElementById("status").innerText = data.status;
+}
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+window.setStatus = async (status) => {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ status })
+    .eq("id", MY_ID);
 
-      document.getElementById("name").textContent = data.username;
-      document.getElementById("status").textContent = data.status;
-    }
+  console.log("UPDATE ERROR:", error);
 
-    window.onload = loadMe;
-  </script>
+  await load();
+};
+
+window.onload = load;
+</script>
+
 </head>
 
 <body>
 
-  <h2>Мой профиль</h2>
+<h2>Мой профиль</h2>
 
-  <p>Имя: <b id="name"></b></p>
-  <p>Статус: <b id="status"></b></p>
+<p>Имя: <b id="name"></b></p>
+<p>Статус: <b id="status"></b></p>
 
-  <button onclick="setStatus('online')">🟢 Онлайн</button>
-  <button onclick="setStatus('busy')">🟡 Занят</button>
-  <button onclick="setStatus('offline')">⚪ Оффлайн</button>
+<button onclick="setStatus('online')">🟢 Онлайн</button>
+<button onclick="setStatus('busy')">🟡 Занят</button>
+<button onclick="setStatus('offline')">⚪ Оффлайн</button>
 
 </body>
 </html>
